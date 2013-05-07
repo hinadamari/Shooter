@@ -13,6 +13,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -160,21 +161,22 @@ public class Shooter extends JavaPlugin implements Listener {
      * クリックされたときのイベント処理
      * @param event
      */
-    @EventHandler
+    @EventHandler(priority= EventPriority.HIGH)
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
 
         if (player.getItemInHand() == null ||
             player.getItemInHand().getType() == Material.AIR ||
             !player.getItemInHand().getItemMeta().hasDisplayName() ||
-            !player.getItemInHand().getItemMeta().getDisplayName().equals(DISPLAY_NAME) ) {
+            !player.getItemInHand().getItemMeta().getDisplayName().equals(DISPLAY_NAME)) {
             return;
         }
 
-        event.setCancelled(true);
-
-        if (event.getAction() == Action.RIGHT_CLICK_AIR ||
+        if (event.getAction() == Action.PHYSICAL) {
+        	return;
+        } else if (event.getAction() == Action.RIGHT_CLICK_AIR ||
             event.getAction() == Action.RIGHT_CLICK_BLOCK ) {
+        	event.setCancelled(true);
             return;
         }
 
@@ -182,6 +184,8 @@ public class Shooter extends JavaPlugin implements Listener {
             player.sendMessage(ChatColor.RED + "距離が遠すぎます!!");
             return;
         }
+
+        event.setCancelled(true);
 
         // レベルを取得
         ItemStack shooter = player.getItemInHand();
