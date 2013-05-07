@@ -6,17 +6,18 @@ package com.github.ucchyocean;
 import java.util.ArrayList;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Effect;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -26,20 +27,13 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class Shooter extends JavaPlugin implements Listener {
 
-    private static final String NAME = "shooter";
+    private static final String NAME = "フックショット";
     private static final String DISPLAY_NAME =
-            ChatColor.BLUE.toString() + ChatColor.BOLD.toString() + NAME;
-    private static final ArrayList<String> LORE;
-    static {
-        LORE = new ArrayList<String>();
-        LORE.add("飛びたい目標をクリックすることで、慣性を利かせながら");
-        LORE.add("飛ぶことが出来る。飛べる回数は有限で、EXPバーで");
-        LORE.add("残り燃料を確認することが出来る。");
-    }
-    private static final int DEFAULT_LEVEL = 4;
-    private static final int DEFAULT_COST = 10;
-    private static final int MAX_LEVEL = 15;
-    private static final int RANGE = 50;
+            ChatColor.WHITE + NAME;
+
+    private static final int MAX_LEVEL = 3;
+    private static final int DEFAULT_LEVEL = 2;
+    private static final int RANGE = 64;
 
     private ItemStack item;
 
@@ -51,11 +45,29 @@ public class Shooter extends JavaPlugin implements Listener {
 
         getServer().getPluginManager().registerEvents(this, this);
 
-        item = new ItemStack(Material.TRIPWIRE_HOOK, 1);
+        item = new ItemStack(Material.FISHING_ROD, 1);
         ItemMeta shooterMeta = item.getItemMeta();
         shooterMeta.setDisplayName(DISPLAY_NAME);
-        shooterMeta.setLore(LORE);
         item.setItemMeta(shooterMeta);
+
+        // レシピ追加
+        ShapedRecipe recipe1 = new ShapedRecipe(getShooter(1));
+        recipe1.shape("  B", " BC", "B C");
+        recipe1.setIngredient('B', Material.STICK);
+        recipe1.setIngredient('C', Material.GOLD_INGOT);
+        getServer().addRecipe(recipe1);
+
+        ShapedRecipe recipe = new ShapedRecipe(getShooter(2));
+        recipe.shape("  B", " BC", "B C");
+        recipe.setIngredient('B', Material.STICK);
+        recipe.setIngredient('C', Material.NETHER_BRICK_ITEM);
+        getServer().addRecipe(recipe);
+
+        ShapedRecipe recipe3 = new ShapedRecipe(getShooter(3));
+        recipe3.shape("  B", " BC", "B C");
+        recipe3.setIngredient('B', Material.STICK);
+        recipe3.setIngredient('C', Material.IRON_INGOT);
+        getServer().addRecipe(recipe3);
     }
 
     /**
@@ -116,21 +128,32 @@ public class Shooter extends JavaPlugin implements Listener {
      */
     private void giveShooter(Player player, int level) {
 
-        ItemStack shooter = this.item.clone();
-
         if ( level < 1 ) {
             level = 1;
         } else if ( level > MAX_LEVEL ) {
             level = MAX_LEVEL;
         }
 
-        shooter.addUnsafeEnchantment(Enchantment.OXYGEN, level);
+        player.getInventory().addItem(getShooter(level));
+    }
 
-        ItemStack temp = player.getItemInHand();
-        player.setItemInHand(shooter);
-        if ( temp != null ) {
-            player.getInventory().addItem(temp);
-        }
+    /**
+     * Shooterの取得
+     * @param level
+     * @return
+     */
+    private ItemStack getShooter(int level) {
+
+    	ItemStack shooter = this.item.clone();
+
+    	ItemMeta shooterMeta = shooter.getItemMeta();
+    	ArrayList<String> lore = new ArrayList<String>();
+        lore.add(ChatColor.BLUE + "Level: " + ChatColor.WHITE +  level);
+        shooterMeta.setLore(lore);
+        shooter.setItemMeta(shooterMeta);
+
+        return shooter;
+
     }
 
     /**
@@ -141,90 +164,50 @@ public class Shooter extends JavaPlugin implements Listener {
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
 
-        if ( player.getItemInHand() == null ||
-                player.getItemInHand().getType() == Material.AIR ||
-                player.getItemInHand().getItemMeta().getDisplayName() == null ||
-                !player.getItemInHand().getItemMeta().getDisplayName().equals(DISPLAY_NAME) ) {
+        if (player.getItemInHand() == null ||
+            player.getItemInHand().getType() == Material.AIR ||
+            !player.getItemInHand().getItemMeta().hasDisplayName() ||
+            !player.getItemInHand().getItemMeta().getDisplayName().equals(DISPLAY_NAME) ) {
             return;
         }
 
-        if ( event.getAction() == Action.PHYSICAL ) {
-            return;
-        } else if ( event.getAction() == Action.RIGHT_CLICK_AIR ||
-                event.getAction() == Action.RIGHT_CLICK_BLOCK ) {
-            event.setCancelled(true);
-            return;
-        }
+        event.setCancelled(true);
 
-        if ( player.getTargetBlock(null, RANGE).getType() == Material.AIR ) {
-            player.sendMessage(ChatColor.RED + "out of range!!");
-            event.setCancelled(true);
+        if (event.getAction() == Action.RIGHT_CLICK_AIR ||
+            event.getAction() == Action.RIGHT_CLICK_BLOCK ) {
             return;
         }
 
-        if ( !hasExperience(player, DEFAULT_COST) ) {
-            player.sendMessage(ChatColor.RED + "no fuel!!");
-            event.setCancelled(true);
+        if (player.getTargetBlock(null, RANGE).getType() == Material.AIR) {
+            player.sendMessage(ChatColor.RED + "距離が遠すぎます!!");
             return;
         }
 
-        takeExperience(player, DEFAULT_COST);
-
+        // レベルを取得
         ItemStack shooter = player.getItemInHand();
-        double level = (double)shooter.getEnchantmentLevel(Enchantment.OXYGEN);
+        double level = 1;
+        for (String lore : shooter.getItemMeta().getLore()) {
+        	String[] lores = ChatColor.stripColor(lore).split(" ");
+        	if (lores[0].equals("Level:")) level = Double.valueOf(lores[1]);
+        }
 
-        player.setVelocity(player.getLocation().getDirection().multiply(level));
+        // 耐久値を消費
+        if (player.getGameMode() != GameMode.CREATIVE) {
+			if (player.getItemInHand().getDurability() + 1 >= 65) {
+				player.setItemInHand(new ItemStack(Material.AIR, 1));
+				player.playSound(player.getLocation(), Sound.ITEM_BREAK, 1, 1);
+			} else {
+				player.getItemInHand().setDurability((short) (player.getItemInHand().getDurability() + 1));
+			}
+		}
+
+        // 飛翔
+        player.setVelocity(player.getLocation().getDirection().multiply(level + 1));
         player.setFallDistance(-1000F);
-        player.playEffect(player.getEyeLocation().add(0.5D, 0.0D, 0.5D), Effect.POTION_BREAK, 21);
-        player.playEffect(player.getEyeLocation().add(0.5D, 0.0D, 0.5D), Effect.POTION_BREAK, 21);
+        player.playSound(player.getLocation(), Sound.GHAST_FIREBALL, 1, 1);
 
         event.setCancelled(true);
     }
 
-    /**
-     * プレイヤーから、指定した経験値量を減らす。
-     * @param player プレイヤー
-     * @param amount 減らす量
-     */
-    public static void takeExperience(final Player player, int amount) {
-        player.giveExp(-amount);
-        updateExp(player);
-    }
 
-    /**
-     * プレイヤーが指定した量の経験値を持っているかどうか判定する。
-     * @param player プレイヤー
-     * @param amount 判定する量
-     * @return もっているかどうか
-     */
-    public static boolean hasExperience(final Player player, int amount) {
-        return (player.getTotalExperience() >= amount);
-    }
-
-    /**
-     * プレイヤーの経験値量を、指定値に設定する。
-     * @param player プレイヤー
-     * @param amount 経験値の量
-     */
-    public static void setExperience(final Player player, int amount) {
-        player.setTotalExperience(amount);
-        updateExp(player);
-    }
-
-    /**
-     * 経験値表示を更新する
-     * @param player 更新対象のプレイヤー
-     */
-    private static void updateExp(final Player player) {
-
-        int total = player.getTotalExperience();
-        player.setLevel(0);
-        player.setExp(0);
-        while ( total > player.getExpToLevel() ) {
-            total -= player.getExpToLevel();
-            player.setLevel(player.getLevel()+1);
-        }
-        float xp = (float)total / (float)player.getExpToLevel();
-        player.setExp(xp);
-    }
 }
