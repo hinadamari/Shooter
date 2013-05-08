@@ -51,24 +51,7 @@ public class Shooter extends JavaPlugin implements Listener {
         shooterMeta.setDisplayName(DISPLAY_NAME);
         item.setItemMeta(shooterMeta);
 
-        // レシピ追加
-        ShapedRecipe recipe1 = new ShapedRecipe(getShooter(1));
-        recipe1.shape("  B", " BC", "B C");
-        recipe1.setIngredient('B', Material.STICK);
-        recipe1.setIngredient('C', Material.GOLD_INGOT);
-        getServer().addRecipe(recipe1);
-
-        ShapedRecipe recipe = new ShapedRecipe(getShooter(2));
-        recipe.shape("  B", " BC", "B C");
-        recipe.setIngredient('B', Material.STICK);
-        recipe.setIngredient('C', Material.NETHER_BRICK_ITEM);
-        getServer().addRecipe(recipe);
-
-        ShapedRecipe recipe3 = new ShapedRecipe(getShooter(3));
-        recipe3.shape("  B", " BC", "B C");
-        recipe3.setIngredient('B', Material.STICK);
-        recipe3.setIngredient('C', Material.IRON_INGOT);
-        getServer().addRecipe(recipe3);
+        this.addRecipe(); // レシピ追加
     }
 
     /**
@@ -120,6 +103,31 @@ public class Shooter extends JavaPlugin implements Listener {
         }
 
         return false;
+    }
+
+    /**
+     * Shooterのレシピ追加
+     */
+    private void addRecipe() {
+
+    	ShapedRecipe recipe1 = new ShapedRecipe(getShooter(1));
+        recipe1.shape("  B", " BC", "B C");
+        recipe1.setIngredient('B', Material.STICK);
+        recipe1.setIngredient('C', Material.LEATHER);
+        getServer().addRecipe(recipe1);
+
+        ShapedRecipe recipe = new ShapedRecipe(getShooter(2));
+        recipe.shape("  B", " BC", "B C");
+        recipe.setIngredient('B', Material.STICK);
+        recipe.setIngredient('C', Material.NETHER_BRICK_ITEM);
+        getServer().addRecipe(recipe);
+
+        ShapedRecipe recipe3 = new ShapedRecipe(getShooter(3));
+        recipe3.shape("  B", " BC", "B C");
+        recipe3.setIngredient('B', Material.STICK);
+        recipe3.setIngredient('C', Material.IRON_INGOT);
+        getServer().addRecipe(recipe3);
+
     }
 
     /**
