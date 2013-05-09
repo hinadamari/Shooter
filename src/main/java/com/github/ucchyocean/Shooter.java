@@ -11,6 +11,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -21,6 +22,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.Vector;
 
 /**
  * @author ucchy
@@ -214,7 +216,21 @@ public class Shooter extends JavaPlugin implements Listener {
 		}
 
         // 飛翔
-        player.setVelocity(player.getLocation().getDirection().multiply(level + 1));
+        Vector vec = player.getLocation().getDirection().multiply(level + 1);
+        if (((Entity) player).isOnGround()) {
+        	// 斜め移動時、地面との摩擦でスピードを落とさないように
+        	double x, y, y2, z;
+        	x = player.getLocation().getDirection().getX() * 100;
+        	y = player.getLocation().getDirection().getY() * 100;
+        	z = player.getLocation().getDirection().getZ() * 100;
+        	y2 = Math.signum(y) * Math.min(Math.abs(y) * (1.3 - (Math.abs(50 - Math.abs(y)) / 167)), Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2)));
+        	double div = Math.sqrt((Math.pow(x, 2) + Math.pow(z, 2)) / (Math.pow(x, 2) + Math.pow(y, 2) - Math.pow(y2, 2) + Math.pow(z, 2))) * 100;
+        	vec = new Vector(x / div, y2 / 100, z / div).multiply(level + 1);
+        	//getServer().broadcastMessage("before x:"+ x / 100 +" y:"+ y / 100 +" z:"+ z / 100 +"");
+        	//getServer().broadcastMessage("after  x:"+ x / div +" y:"+ y2 / 100 +" z:"+ z / div +"");
+        	player.teleport(player.getLocation().add(0, 0.1, 0));
+        }
+        player.setVelocity(vec);
         player.setFallDistance(-1000F);
         player.playSound(player.getLocation(), Sound.GHAST_FIREBALL, 1, 1);
 
