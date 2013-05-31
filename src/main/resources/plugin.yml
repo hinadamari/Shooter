@@ -13,6 +13,12 @@ commands:
     permission: shooter
     permission-message: You don't have permission "<permission>".
 permissions:
-  shooter:
-    description: Shooter get permission.
-    default: true
+  shooter.get:
+    description: WireRod command permission.
+    default: op
+  shooter.give:
+    description: WireRod command permission.
+    default: op
+  shooter.action:
+    description: WireRod permission.
+    default: false

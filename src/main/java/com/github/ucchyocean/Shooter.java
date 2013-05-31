@@ -75,6 +75,11 @@ public class Shooter extends JavaPlugin implements Listener {
                 return true;
             }
 
+            if (!sender.hasPermission("shooter.get")) {
+            	sender.sendMessage(ChatColor.RED + "You don't have permission shooter.get.");
+            	return true;
+            }
+
             Player player = (Player)sender;
 
             int level = DEFAULT_LEVEL;
@@ -87,6 +92,11 @@ public class Shooter extends JavaPlugin implements Listener {
             return true;
 
         } else if ( args.length >= 2 && args[0].equalsIgnoreCase("give") ) {
+
+        	if (!sender.hasPermission("shooter.give")) {
+            	sender.sendMessage(ChatColor.RED + "You don't have permission shooter.give.");
+            	return true;
+            }
 
             Player player = getServer().getPlayerExact(args[1]);
             if ( player == null ) {
@@ -174,6 +184,8 @@ public class Shooter extends JavaPlugin implements Listener {
     @EventHandler(priority= EventPriority.HIGH)
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
+
+        if (!player.hasPermission("shooter.action")) return;
 
         if (player.getItemInHand() == null ||
             player.getItemInHand().getType() == Material.AIR ||
