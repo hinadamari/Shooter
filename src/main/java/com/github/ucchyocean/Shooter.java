@@ -227,9 +227,17 @@ public class Shooter extends JavaPlugin implements Listener {
 			}
 		}
 
+        Entity entity;
+        if (player.getVehicle() != null &&
+        		player.hasPermission("shooter.action.rideon." + player.getVehicle().getType().name().toLowerCase())) {
+        	entity = (Entity) player.getVehicle();
+        } else {
+        	entity = player;
+        }
+
         // 飛翔
         Vector vec = player.getLocation().getDirection().multiply(level + 1);
-        if (((Entity) player).isOnGround()) {
+        if (((Entity) entity).isOnGround()) {
         	// 斜め移動時、地面との摩擦でスピードを落とさないように
         	double x, y, y2, z;
         	x = player.getLocation().getDirection().getX() * 100;
@@ -240,11 +248,17 @@ public class Shooter extends JavaPlugin implements Listener {
         	vec = new Vector(x / div, y2 / 100, z / div).multiply(level + 1);
         	//getServer().broadcastMessage("before x:"+ x / 100 +" y:"+ y / 100 +" z:"+ z / 100 +"");
         	//getServer().broadcastMessage("after  x:"+ x / div +" y:"+ y2 / 100 +" z:"+ z / div +"");
+        	if (entity.getEntityId() != player.getEntityId()) entity.teleport(entity.getLocation().add(0, 0.1, 0));
         	player.teleport(player.getLocation().add(0, 0.1, 0));
         }
+
         player.setVelocity(vec);
         player.setFallDistance(-1000F);
-        player.playSound(player.getLocation(), Sound.GHAST_FIREBALL, 1, 1);
+        if (entity.getEntityId() != player.getEntityId()) {
+        	entity.setVelocity(vec);
+        	entity.setFallDistance(-1000F);
+        }
+        player.playSound(entity.getLocation(), Sound.GHAST_FIREBALL, 1, 1);
 
         event.setCancelled(true);
     }

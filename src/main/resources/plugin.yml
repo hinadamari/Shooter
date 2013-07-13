@@ -1,4 +1,4 @@
-name: shooter
+name: Shooter
 main: com.github.ucchyocean.Shooter
 version: 1.1.0
 author: ucchy
@@ -14,11 +14,19 @@ commands:
     permission-message: You don't have permission "<permission>".
 permissions:
   shooter.get:
-    description: WireRod command permission.
+    description: Shooter command permission.
     default: op
   shooter.give:
-    description: WireRod command permission.
+    description: Shooter command permission.
     default: op
   shooter.action:
-    description: WireRod permission.
+    description: Shooter permission.
     default: false
+  shooter.action.rideon.*:
+    description: Shooter permission.
+    default: false
+    children:
+      shooter.action.rideon.horse: true
+      shooter.action.rideon.pig: true
+      shooter.action.rideon.boat: true
+      shooter.action.rideon.minecart: true
